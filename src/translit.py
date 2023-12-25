@@ -32,6 +32,7 @@ def parse_cli_arguments():
     parser.add_argument(
         "names",
         nargs="+",
+        default=[""],
         help="Names in format \"Surname First name Patronymic\"")
     return parser.parse_args()
 
@@ -56,7 +57,7 @@ def main():
                     print("С данным именем что-то не так")
 
         except KeyboardInterrupt:
-            pass
+            print()
 
     rows = [['username:', 'password:', 'firstname:', 'lastname:']]
 

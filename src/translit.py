@@ -3,12 +3,13 @@ from csv import writer as csv_writer
 
 from transliteration import transliteration
 
-DEFAULT_PASSWORD = "dVEjRhm5"
 STOP_WORDS = ["stop", "STOP"]
 
 
 def valid_name(name: str) -> bool:
     is_valid = True
+    if name is None:
+        is_valid = False
     if len(name.split()) != 3:
         is_valid = False
     return is_valid
@@ -28,10 +29,10 @@ def parse_cli_arguments():
     parser.add_argument("-p",
                         "--password",
                         help="Change default password",
-                        default=DEFAULT_PASSWORD)
+                        default="dVEjRhm5")
     parser.add_argument(
         "names",
-        nargs="+",
+        nargs="*",
         help="Names in format \"Surname First name Patronymic\"")
     return parser.parse_args()
 
@@ -39,9 +40,9 @@ def parse_cli_arguments():
 def main():
     cli_arguments = parse_cli_arguments()
     names = cli_arguments.names
-    for name in names:
+    for name_id, name in enumerate(names):
         if not valid_name(name):
-            names.remove(name)
+            del names[name_id]
     if cli_arguments.interactive:
         try:
             while True:
@@ -54,18 +55,20 @@ def main():
                     names.append(name)
                 else:
                     print("С данным именем что-то не так")
-
         except KeyboardInterrupt:
-            pass
+            print()
 
     rows = [['username:', 'password:', 'firstname:', 'lastname:']]
 
     for name in names:
-        splitted_name = name.split()
-        formatted_name = transliteration(name.lower()).split()
-        login = f"{formatted_name[0]}.{formatted_name[1][0]}.{formatted_name[2][0]}"
-        rows.append(
-            ([login, DEFAULT_PASSWORD, splitted_name[1], splitted_name[2]]))
+        if name:
+            splitted_name = name.split()
+            formatted_name = transliteration(name.lower()).split()
+            login = f"{formatted_name[0]}.{formatted_name[1][0]}.{formatted_name[2][0]}"
+            rows.append(([
+                login, cli_arguments.password, splitted_name[1],
+                splitted_name[2]
+            ]))
 
     if cli_arguments.target:
         writer = csv_writer(open(cli_arguments.target, "w"))
